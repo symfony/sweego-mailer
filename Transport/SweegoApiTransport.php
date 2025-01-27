@@ -90,6 +90,7 @@ final class SweegoApiTransport extends AbstractApiTransport
             'from' => $this->formatAddress($envelope->getSender()),
             'subject' => $email->getSubject(),
             'campaign-type' => 'transac',
+            'channel' => 'email',
         ];
 
         if ($email->getTextBody()) {
