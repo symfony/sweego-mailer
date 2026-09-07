@@ -135,6 +135,38 @@ class SweegoApiTransportTest extends TestCase
         $this->assertSame('foobar', $message->getMessageId());
     }
 
+    public function testSendWithCcAndBcc()
+    {
+        $client = new MockHttpClient(function (string $method, string $url, array $options): ResponseInterface {
+            $body = json_decode($options['body'], true);
+
+            $this->assertSame([['email' => 'tony.stark@marvel.com', 'name' => 'Tony Stark']], $body['recipients']);
+            $this->assertSame([['email' => 'pepper@marvel.com', 'name' => 'Pepper']], $body['cc']);
+            $this->assertSame([['email' => 'nick.fury@marvel.com']], $body['bcc']);
+            $this->assertArrayNotHasKey('Cc', $body['headers']);
+            $this->assertArrayNotHasKey('Bcc', $body['headers']);
+
+            return new JsonMockResponse(['transaction_id' => 'foobar'], [
+                'http_code' => 200,
+            ]);
+        });
+
+        $transport = new SweegoApiTransport('ACCESS_KEY', $client);
+
+        $mail = new Email();
+        $mail->subject('Hello!')
+            ->to(new Address('tony.stark@marvel.com', 'Tony Stark'))
+            ->from(new Address('fabpot@symfony.com', 'Fabien'))
+            ->text('Hello here!')
+            ->addCc(new Address('pepper@marvel.com', 'Pepper'))
+            ->addBcc('nick.fury@marvel.com')
+        ;
+
+        $message = $transport->send($mail);
+
+        $this->assertSame('foobar', $message->getMessageId());
+    }
+
     /**
      * IDN (internationalized domain names) like kältetechnik-xyz.de need to be transformed to ACE
      * (ASCII Compatible Encoding) e.g.xn--kltetechnik-xyz-0kb.de, otherwise Sweego api answers with 400 http code.

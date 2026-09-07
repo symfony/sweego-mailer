@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+8.2
+---
+
+ * Add support for CC and BCC recipients
+
 7.3
 ---
 

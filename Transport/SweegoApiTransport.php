@@ -93,6 +93,14 @@ final class SweegoApiTransport extends AbstractApiTransport
             'channel' => 'email',
         ];
 
+        if ($emails = $email->getCc()) {
+            $payload['cc'] = $this->formatAddresses($emails);
+        }
+
+        if ($emails = $email->getBcc()) {
+            $payload['bcc'] = $this->formatAddresses($emails);
+        }
+
         if ($email->getTextBody()) {
             $payload['message-txt'] = $email->getTextBody();
         }
@@ -145,7 +153,7 @@ final class SweegoApiTransport extends AbstractApiTransport
         $headersPrepared = [];
         foreach ($headers->all() as $header) {
             // Sweego API does not accept those headers.
-            if (\in_array($header->getName(), ['To', 'From', 'Subject'], true)) {
+            if (\in_array($header->getName(), ['To', 'Cc', 'Bcc', 'From', 'Subject'], true)) {
                 continue;
             }
 
